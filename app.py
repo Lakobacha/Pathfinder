@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 
 # 1. CONFIGURACIÓN
 st.set_page_config(page_title="Pathfinder 2e", layout="wide")
@@ -85,4 +85,4 @@ if camp_sel != "---" and libro_sel != "---":
         st.info("Crea un capítulo para comenzar.")
 else:
     st.title("🛡️ Pathfinder 2e")
-    st.info("Configura la campaña y el libro en el panel izquierdo.")
+    st.info("Configura la campaña y el libro en el panel izquierdo.") 
