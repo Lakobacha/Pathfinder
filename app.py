@@ -76,4 +76,4 @@
 
     # --- ENEMY PLACEHOLDER (Para no borrarlo) ---
     with t_ene:
-        st.info("👹 Aquí podrás gestionar el bestiario de este capítulo.") 
+        st.info("👹 Aquí podrás gestionar el bestiario de este capítulo.")
