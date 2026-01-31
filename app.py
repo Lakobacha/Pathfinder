@@ -52,6 +52,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
     cap_data = st.session_state.data[camp_sel][libro_sel][cap_sel]
     t_mapas, t_pnjs, t_enemigos, t_notas = st.tabs(["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "📝 Notas"])
 
+    # --- PESTAÑA MAPAS ---
     with t_mapas:
         with st.expander("➕ Subir Nuevo Mapa"):
             nom_m = st.text_input("Nombre Mapa")
@@ -68,56 +69,96 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 c1.image(m['imagen'], use_container_width=True)
                 c2.info(m['info'])
 
+    # --- PESTAÑA PNJS ---
     with t_pnjs:
         st.write("### 👥 Hojas de Personaje (PNJ)")
         with st.expander("➕ Crear Nueva Hoja PNJ"):
             with st.form("ficha_pnj"):
                 c1, c2, c3 = st.columns([2, 1, 1])
-                p_nom = c1.text_input("Nombre del PNJ")
+                p_nom = c1.text_input("Nombre")
                 p_niv = c2.number_input("Nivel", 0, 25)
-                p_anc = c3.text_input("Ancestría/Clase")
-                
-                st.write("**Estadísticas Base**")
+                p_anc = c3.text_input("Clase/Tipo")
+                st.write("**Estadísticas**")
                 s1, s2, s3, s4, s5, s6 = st.columns(6)
-                fuer = s1.number_input("FUE", 10)
-                des = s2.number_input("DES", 10)
-                con = s3.number_input("CON", 10)
-                int_ = s4.number_input("INT", 10)
-                sab = s5.number_input("SAB", 10)
-                car = s6.number_input("CAR", 10)
-                
+                fuer, des, con = s1.number_input("FUE", 10), s2.number_input("DES", 10), s3.number_input("CON", 10)
+                int_, sab, car = s4.number_input("INT", 10), s5.number_input("SAB", 10), s6.number_input("CAR", 10)
                 st.write("**Combate**")
                 v1, v2, v3 = st.columns(3)
-                p_hp = v1.number_input("Vida (HP)", 1)
-                p_ac = v2.number_input("Defensa (AC)", 10)
-                p_per = v3.number_input("Percepción", 0)
-                
-                p_habil = st.text_area("Habilidades y Ataques", placeholder="Espada Larga +7 (1d8+4), Diplomacia +5...")
-                
+                p_hp, p_ac, p_per = v1.number_input("HP", 1), v2.number_input("AC", 10), v3.number_input("Percepción", 0)
+                p_habil = st.text_area("Habilidades y Ataques")
                 if st.form_submit_button("💾 Registrar PNJ"):
-                    cap_data["pnjs"].append({
-                        "n": p_nom, "lvl": p_niv, "anc": p_anc,
-                        "stats": [fuer, des, con, int_, sab, car],
-                        "hp": p_hp, "ac": p_ac, "per": p_per, "hab": p_habil
+                    cap_data["pnjs"].append({"n": p_nom, "lvl": p_niv, "anc": p_anc, "stats": [fuer, des, con, int_, sab, car], "hp": p_hp, "ac": p_ac, "per": p_per, "hab": p_habil})
+                    st.rerun()
+        for p in cap_data["pnjs"]:
+            with st.container(border=True):
+                st.markdown(f"### {p['n']} — *Nivel {p['lvl']}*")
+                c_a, c_b = st.columns([1, 2])
+                c_a.markdown(f"**HP:** {p['hp']} | **AC:** {p['ac']} \n\n F:{p['stats'][0]} D:{p['stats'][1]} C:{p['stats'][2]} I:{p['stats'][3]} S:{p['stats'][4]} Ch:{p['stats'][5]}")
+                c_b.info(p['hab'])
+
+    # --- PESTAÑA ENEMIGOS ---
+    with t_enemigos:
+        st.write("### 👹 Bestiario del Capítulo")
+        with st.expander("➕ Añadir Nuevo Enemigo"):
+            with st.form("ficha_enemigo"):
+                ce1, ce2, ce3 = st.columns([2, 1, 1])
+                e_nom = ce1.text_input("Nombre de la Criatura")
+                e_niv = ce2.number_input("Nivel/Rango", -1, 30)
+                e_traits = ce3.text_input("Rasgos (ej: Muerto Viviente, Humanoide)")
+                
+                st.write("**Defensas y Salvaciones**")
+                ds1, ds2, ds3, ds4, ds5 = st.columns(5)
+                e_ac = ds1.number_input("CA", 10)
+                e_hp = ds2.number_input("Vida (HP)", 1)
+                e_fort = ds3.number_input("Fort", 0)
+                e_ref = ds4.number_input("Ref", 0)
+                e_vol = ds5.number_input("Vol", 0)
+                
+                st.write("**Atributos**")
+                sa1, sa2, sa3, sa4, sa5, sa6 = st.columns(6)
+                ef, ed, ec = sa1.number_input("FUE", 10), sa2.number_input("DES", 10), sa3.number_input("CON", 10)
+                ei, es, ecar = sa4.number_input("INT", 10), sa5.number_input("SAB", 10), sa6.number_input("CAR", 10)
+
+                e_stats = st.text_area("Acciones, Ataques y Habilidades Especiales", placeholder="Zarpazo +10 (1d10+4), Aliento de fuego (2 Acciones)...")
+                
+                if st.form_submit_button("💾 Registrar Enemigo"):
+                    cap_data["enemigos"].append({
+                        "n": e_nom, "lvl": e_niv, "traits": e_traits,
+                        "ac": e_ac, "hp": e_hp, "fort": e_fort, "ref": e_ref, "vol": e_vol,
+                        "stats": [ef, ed, ec, ei, es, ecar],
+                        "desc": e_stats
                     })
                     st.rerun()
 
-        # Visualización tipo Ficha Oficial Simplificada
-        for p in cap_data["pnjs"]:
+        # Visualización de Enemigos
+        for e in cap_data["enemigos"]:
             with st.container(border=True):
-                st.markdown(f"### {p['n']} — *Nivel {p['lvl']} {p['anc']}*")
-                col_a, col_b = st.columns([1, 2])
-                with col_a:
+                st.markdown(f"### 💀 {e['n']} — *Criatura {e['lvl']}*")
+                st.caption(f"Rasgos: {e['traits']}")
+                col_e1, col_e2 = st.columns([1, 2])
+                with col_e1:
                     st.markdown(f"""
-                    **HP:** {p['hp']} | **AC:** {p['ac']} | **PER:** {p['per']}
+                    **CA:** {e['ac']} | **HP:** {e['hp']}
                     
-                    | FUE | DES | CON | INT | SAB | CAR |
-                    |:---:|:---:|:---:|:---:|:---:|:---:|
-                    | {p['stats'][0]} | {p['stats'][1]} | {p['stats'][2]} | {p['stats'][3]} | {p['stats'][4]} | {p['stats'][5]} |
+                    **Salvaciones:**
+                    * **Fort:** {e['fort']}
+                    * **Ref:** {e['ref']}
+                    * **Vol:** {e['vol']}
+                    
+                    | F | D | C | I | S | Ch |
+                    |:-:|:-:|:-:|:-:|:-:|:--:|
+                    |{e['stats'][0]}|{e['stats'][1]}|{e['stats'][2]}|{e['stats'][3]}|{e['stats'][4]}|{e['stats'][5]}|
                     """)
-                with col_b:
-                    st.write("**Habilidades y Acción:**")
-                    st.info(p['hab'])
+                with col_e2:
+                    st.write("**Acciones y Habilidades:**")
+                    st.warning(e['desc'])
+
+    # --- PESTAÑA NOTAS ---
+    with t_notas:
+        st.write("### 📝 Notas del Capítulo")
+        cap_data["notas"] = st.text_area("Escribe aquí el resumen o notas generales:", value=cap_data["notas"], height=400)
+        if st.button("💾 Guardar Notas"):
+            st.success("¡Notas actualizadas!")
 
 else:
-    st.info("Configura los datos en el panel lateral.") 
+    st.info("Configura Campaña, Libro y Capítulo en el panel lateral.") 
