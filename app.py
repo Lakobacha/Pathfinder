@@ -61,6 +61,7 @@ with st.sidebar:
 if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
     cd = st.session_state.data[camp_sel][libro_sel][cap_sel]
 
+    # Asegurar que las llaves existen
     for k in ["mapas", "pnjs", "enemigos", "combate"]:
         if k not in cd:
             cd[k] = []
@@ -69,9 +70,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         ["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"]
     )
 
-    # ======================================================
     # MAPAS
-    # ======================================================
     with t_map:
         st.subheader("🗺️ Mapas del Capítulo")
         with st.expander("➕ Añadir Nuevo Mapa"):
@@ -86,6 +85,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                         "img": m_img.getvalue() if m_img else None
                     })
                     st.rerun()
+        
         for m in cd["mapas"]:
             with st.container(border=True):
                 st.markdown(f"### {m['nombre']}")
@@ -93,32 +93,53 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                     st.image(m["img"], use_container_width=True)
                 st.write(m["info"])
 
-    # ======================================================
     # PNJs
-    # ======================================================
     with t_pnj:
         with st.expander("➕ Crear Nuevo PNJ"):
             with st.form("f_pnj"):
-                c1,c2,c3 = st.columns([2,1,1])
+                c1, c2, c3 = st.columns([2,1,1])
                 p_nom = c1.text_input("Nombre")
-                p_niv = c2.number_input("Nivel",0,20)
-                p_anc = c3.text_input("Clase")
-                s1,s2,s3,s4,s5,s6 = st.columns(6)
-                f = s1.number_input("FUE",10)
-                d = s2.number_input("DES",10)
-                con = s3.number_input("CON",10)
-                i = s4.number_input("INT",10)
-                sab = s5.number_input("SAB",10)
-                car = s6.number_input("CAR",10)
-                v1,v2,v3 = st.columns(3)
-                p_hp = v1.number_input("HP Máx",1)
-                p_ac = v2.number_input("CA",10)
-                p_per = v3.number_input("Percepción",0)
+                p_niv = c2.number_input("Nivel", 0, 20)
+                p_clase = c3.text_input("Clase")
+                
+                s1, s2, s3, s4, s5, s6 = st.columns(6)
+                f = s1.number_input("FUE", 10)
+                d = s2.number_input("DES", 10)
+                con = s3.number_input("CON", 10)
+                i = s4.number_input("INT", 10)
+                sab = s5.number_input("SAB", 10)
+                car = s6.number_input("CAR", 10)
+                
+                v1, v2, v3 = st.columns(3)
+                p_hp = v1.number_input("HP Máx", 1)
+                p_ac = v2.number_input("CA", 10)
+                p_per = v3.number_input("Percepción", 0)
                 p_hab = st.text_area("Habilidades y Ataques")
+                
                 if st.form_submit_button("💾 Guardar PNJ"):
-                    cd["pnjs"].append({"n":p_nom,"lvl":p_niv,"hp":p_hp,"ac":p_ac,"per":p_per,"stats":[f,d,con,i,sab,car],"hab":p_hab})
+                    cd["pnjs"].append({
+                        "n": p_nom, "lvl": p_niv, "hp": p_hp, 
+                        "ac": p_ac, "per": p_per, 
+                        "stats": [f, d, con, i, sab, car], "hab": p_hab
+                    })
                     st.rerun()
+        
         for p in cd["pnjs"]:
             with st.container(border=True):
-                st.write(f"**{p['n']}** | HP: {
- 
+                # AQUÍ ESTABA EL ERROR: La f-string ahora está cerrada correctamente
+                st.markdown(f"### {p['n']} (Nivel {p['lvl']})")
+                st.write(f"**HP:** {p['hp']} | **CA:** {p['ac']} | **Percepción:** {p['per']}")
+                st.text(p['hab'])
+
+    # NOTAS (Para evitar que los otros tabs queden vacíos y den error)
+    with t_not:
+        cd["notas"] = st.text_area("Bloc de notas del capítulo", value=cd.get("notas", ""), height=400)
+
+    with t_ene:
+        st.info("Sección de enemigos en desarrollo.")
+    
+    with t_com:
+        st.info("Iniciativa y rastreador de combate en desarrollo.")
+
+else:
+    st.info("👈 Selecciona o crea una Campaña, Libro y Capítulo en el menú lateral.") 
