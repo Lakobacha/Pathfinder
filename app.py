@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 import pandas as pd
 
 # 1. CONFIGURACIÓN
@@ -70,7 +70,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         ["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"]
     )
 
-    # MAPAS
+    # --- MAPAS ---
     with t_map:
         st.subheader("🗺️ Mapas del Capítulo")
         with st.expander("➕ Añadir Nuevo Mapa"):
@@ -93,14 +93,14 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                     st.image(m["img"], use_container_width=True)
                 st.write(m["info"])
 
-    # PNJs
+    # --- PNJs ---
     with t_pnj:
         with st.expander("➕ Crear Nuevo PNJ"):
             with st.form("f_pnj"):
                 c1, c2, c3 = st.columns([2,1,1])
                 p_nom = c1.text_input("Nombre")
-                p_niv = c2.number_input("Nivel", 0, 20)
-                p_clase = c3.text_input("Clase")
+                p_niv = c2.number_input("Nivel", 0, 24)
+                p_clase = c3.text_input("Clase/Tipo")
                 
                 s1, s2, s3, s4, s5, s6 = st.columns(6)
                 f = s1.number_input("FUE", 10)
@@ -126,20 +126,22 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         
         for p in cd["pnjs"]:
             with st.container(border=True):
-                # AQUÍ ESTABA EL ERROR: La f-string ahora está cerrada correctamente
                 st.markdown(f"### {p['n']} (Nivel {p['lvl']})")
                 st.write(f"**HP:** {p['hp']} | **CA:** {p['ac']} | **Percepción:** {p['per']}")
-                st.text(p['hab'])
+                st.info(p['hab'])
 
-    # NOTAS (Para evitar que los otros tabs queden vacíos y den error)
+    # --- NOTAS ---
     with t_not:
-        cd["notas"] = st.text_area("Bloc de notas del capítulo", value=cd.get("notas", ""), height=400)
+        st.subheader("📝 Notas del Capítulo")
+        cd["notas"] = st.text_area("Escribe aquí tus notas...", value=cd.get("notas", ""), height=400)
 
+    # --- PLACEHOLDERS ---
     with t_ene:
-        st.info("Sección de enemigos en desarrollo.")
+        st.info("👹 Aquí podrás gestionar el bestiario de este capítulo.")
     
     with t_com:
-        st.info("Iniciativa y rastreador de combate en desarrollo.")
+        st.info("⚔️ Rastreador de iniciativa en desarrollo.")
 
 else:
-    st.info("👈 Selecciona o crea una Campaña, Libro y Capítulo en el menú lateral.")
+    st.title("🧙 Bienvendo al GM Screen de PF2e")
+    st.info("Para comenzar, usa el menú lateral para seleccionar o crear una campaña, libro y capítulo.") 
