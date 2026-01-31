@@ -3,11 +3,18 @@ import streamlit as st
 # 1. CONFIGURACIÓN
 st.set_page_config(page_title="Pathfinder 2e", layout="wide")
 
+# CSS para el botón rojo de borrado
+st.markdown("""
+<style>
+    div.stButton > button[kind="primary"] { background-color: #ff4b4b !important; color: white !important; }
+</style>
+""", unsafe_allow_html=True)
+
 # 2. MEMORIA
 if 'data' not in st.session_state:
     st.session_state.data = {}
 
-# 3. BARRA LATERAL (Jerarquía)
+# 3. BARRA LATERAL (Jerarquía y Gestión)
 with st.sidebar:
     st.header("1. Campaña")
     nueva_c = st.text_input("Nombre de Campaña")
@@ -42,6 +49,12 @@ with st.sidebar:
             cap_sel = st.selectbox("Capítulo", ["---"] + list(st.session_state.data[camp_sel][libro_sel].keys()))
         else:
             cap_sel = "---"
+        
+        # BOTÓN PARA BORRAR CAMPAÑA
+        st.sidebar.markdown("---")
+        if st.sidebar.button(f"🚨 BORRAR CAMPAÑA: {camp_sel}", type="primary"):
+            del st.session_state.data[camp_sel]
+            st.rerun()
     else:
         libro_sel, cap_sel = "---", "---"
 
@@ -104,61 +117,30 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 ce1, ce2, ce3 = st.columns([2, 1, 1])
                 e_nom = ce1.text_input("Nombre de la Criatura")
                 e_niv = ce2.number_input("Nivel/Rango", -1, 30)
-                e_traits = ce3.text_input("Rasgos (ej: Muerto Viviente, Humanoide)")
-                
+                e_traits = ce3.text_input("Rasgos")
                 st.write("**Defensas y Salvaciones**")
                 ds1, ds2, ds3, ds4, ds5 = st.columns(5)
-                e_ac = ds1.number_input("CA", 10)
-                e_hp = ds2.number_input("Vida (HP)", 1)
-                e_fort = ds3.number_input("Fort", 0)
-                e_ref = ds4.number_input("Ref", 0)
-                e_vol = ds5.number_input("Vol", 0)
-                
+                e_ac, e_hp, e_fort, e_ref, e_vol = ds1.number_input("CA", 10), ds2.number_input("Vida", 1), ds3.number_input("Fort", 0), ds4.number_input("Ref", 0), ds5.number_input("Vol", 0)
                 st.write("**Atributos**")
                 sa1, sa2, sa3, sa4, sa5, sa6 = st.columns(6)
-                ef, ed, ec = sa1.number_input("FUE", 10), sa2.number_input("DES", 10), sa3.number_input("CON", 10)
-                ei, es, ecar = sa4.number_input("INT", 10), sa5.number_input("SAB", 10), sa6.number_input("CAR", 10)
-
-                e_stats = st.text_area("Acciones, Ataques y Habilidades Especiales", placeholder="Zarpazo +10 (1d10+4), Aliento de fuego (2 Acciones)...")
-                
+                ef, ed, ec, ei, es, ecar = sa1.number_input("FUE ", 10), sa2.number_input("DES ", 10), sa3.number_input("CON ", 10), sa4.number_input("INT ", 10), sa5.number_input("SAB ", 10), sa6.number_input("CAR ", 10)
+                e_stats = st.text_area("Acciones y Ataques")
                 if st.form_submit_button("💾 Registrar Enemigo"):
-                    cap_data["enemigos"].append({
-                        "n": e_nom, "lvl": e_niv, "traits": e_traits,
-                        "ac": e_ac, "hp": e_hp, "fort": e_fort, "ref": e_ref, "vol": e_vol,
-                        "stats": [ef, ed, ec, ei, es, ecar],
-                        "desc": e_stats
-                    })
+                    cap_data["enemigos"].append({"n": e_nom, "lvl": e_niv, "traits": e_traits, "ac": e_ac, "hp": e_hp, "fort": e_fort, "ref": e_ref, "vol": e_vol, "stats": [ef, ed, ec, ei, es, ecar], "desc": e_stats})
                     st.rerun()
-
-        # Visualización de Enemigos
         for e in cap_data["enemigos"]:
             with st.container(border=True):
                 st.markdown(f"### 💀 {e['n']} — *Criatura {e['lvl']}*")
-                st.caption(f"Rasgos: {e['traits']}")
                 col_e1, col_e2 = st.columns([1, 2])
-                with col_e1:
-                    st.markdown(f"""
-                    **CA:** {e['ac']} | **HP:** {e['hp']}
-                    
-                    **Salvaciones:**
-                    * **Fort:** {e['fort']}
-                    * **Ref:** {e['ref']}
-                    * **Vol:** {e['vol']}
-                    
-                    | F | D | C | I | S | Ch |
-                    |:-:|:-:|:-:|:-:|:-:|:--:|
-                    |{e['stats'][0]}|{e['stats'][1]}|{e['stats'][2]}|{e['stats'][3]}|{e['stats'][4]}|{e['stats'][5]}|
-                    """)
-                with col_e2:
-                    st.write("**Acciones y Habilidades:**")
-                    st.warning(e['desc'])
+                col_e1.markdown(f"**CA:** {e['ac']} | **HP:** {e['hp']} \n **F:** {e['fort']} **R:** {e['ref']} **V:** {e['vol']}")
+                col_e2.warning(e['desc'])
 
     # --- PESTAÑA NOTAS ---
     with t_notas:
         st.write("### 📝 Notas del Capítulo")
-        cap_data["notas"] = st.text_area("Escribe aquí el resumen o notas generales:", value=cap_data["notas"], height=400)
+        cap_data["notas"] = st.text_area("Notas generales:", value=cap_data["notas"], height=400)
         if st.button("💾 Guardar Notas"):
-            st.success("¡Notas actualizadas!")
+            st.success("Guardado.")
 
 else:
-    st.info("Configura Campaña, Libro y Capítulo en el panel lateral.") 
+    st.info("Configura los datos en el panel lateral.")  
