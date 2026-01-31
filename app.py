@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 
 # 1. CONFIGURACIÓN
@@ -142,4 +142,4 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         st.info("Iniciativa y rastreador de combate en desarrollo.")
 
 else:
-    st.info("👈 Selecciona o crea una Campaña, Libro y Capítulo en el menú lateral.") 
+    st.info("👈 Selecciona o crea una Campaña, Libro y Capítulo en el menú lateral.")
