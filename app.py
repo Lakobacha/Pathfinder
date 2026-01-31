@@ -6,7 +6,7 @@ st.set_page_config(page_title="PF2e GM Screen", layout="wide")
 
 # Lista de estados Pathfinder 2e
 ESTADOS_PF2E = [
-    "Agarrado", "Apresado", "Aturdido", "Cegado", "Confundido",
+    "", "Agarrado", "Apresado", "Aturdido", "Cegado", "Confundido",
     "Controlado", "Deslumbrado", "Detenido", "Drenado", "Enfermo",
     "Fascinado", "Fatigado", "Hechizado", "Inconsciente", "Invisible",
     "Maldito", "Paralizado", "Petrificado", "Derribado", "Sordo",
@@ -61,7 +61,6 @@ with st.sidebar:
 if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
     cd = st.session_state.data[camp_sel][libro_sel][cap_sel]
 
-    # Asegurar que las llaves existen
     for k in ["mapas", "pnjs", "enemigos", "combate"]:
         if k not in cd:
             cd[k] = []
@@ -70,7 +69,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         ["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"]
     )
 
-    # --- MAPAS ---
+    # MAPAS
     with t_map:
         st.subheader("🗺️ Mapas del Capítulo")
         with st.expander("➕ Añadir Nuevo Mapa"):
@@ -79,89 +78,69 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 m_info = st.text_area("Información del mapa")
                 m_img = st.file_uploader("Subir imagen del mapa", type=["png","jpg","jpeg"])
                 if st.form_submit_button("💾 Guardar Mapa") and m_nom:
-                    cd["mapas"].append({
-                        "nombre": m_nom,
-                        "info": m_info,
-                        "img": m_img.getvalue() if m_img else None
-                    })
+                    cd["mapas"].append({"nombre": m_nom, "info": m_info, "img": m_img.getvalue() if m_img else None})
                     st.rerun()
-        
         for m in cd["mapas"]:
             with st.container(border=True):
                 st.markdown(f"### {m['nombre']}")
-                if m["img"]:
-                    st.image(m["img"], use_container_width=True)
+                if m["img"]: st.image(m["img"], use_container_width=True)
                 st.write(m["info"])
 
-    # --- PNJs ---
+    # PNJs (MANTENIENDO TU ESTRUCTURA ORIGINAL)
     with t_pnj:
         with st.expander("➕ Crear Nuevo PNJ"):
             with st.form("f_pnj"):
-                c1, c2, c3 = st.columns([2,1,1])
+                c1,c2,c3 = st.columns([2,1,1])
                 p_nom = c1.text_input("Nombre")
-                p_niv = c2.number_input("Nivel", 0, 24)
-                p_clase = c3.text_input("Clase/Tipo")
-                v1, v2, v3 = st.columns(3)
-                p_hp = v1.number_input("HP Máx", 1)
-                p_ac = v2.number_input("CA", 10)
-                p_per = v3.number_input("Percepción", 0)
+                p_niv = c2.number_input("Nivel",0,20)
+                p_anc = c3.text_input("Clase")
+                s1,s2,s3,s4,s5,s6 = st.columns(6)
+                f = s1.number_input("FUE",10)
+                d = s2.number_input("DES",10)
+                con = s3.number_input("CON",10)
+                i = s4.number_input("INT",10)
+                sab = s5.number_input("SAB",10)
+                car = s6.number_input("CAR",10)
+                v1,v2,v3 = st.columns(3)
+                p_hp = v1.number_input("HP Máx",1)
+                p_ac = v2.number_input("CA",10)
+                p_per = v3.number_input("Percepción",0)
                 p_hab = st.text_area("Habilidades y Ataques")
                 if st.form_submit_button("💾 Guardar PNJ"):
-                    cd["pnjs"].append({"n": p_nom, "lvl": p_niv, "hp": p_hp, "ac": p_ac, "per": p_per, "hab": p_hab})
+                    cd["pnjs"].append({"n":p_nom,"lvl":p_niv,"hp":p_hp,"ac":p_ac,"per":p_per,"stats":[f,d,con,i,sab,car],"hab":p_hab})
                     st.rerun()
-        
         for p in cd["pnjs"]:
             with st.container(border=True):
-                st.markdown(f"### {p['n']} (Nivel {p['lvl']})")
-                st.write(f"**HP:** {p['hp']} | **CA:** {p['ac']} | **Percepción:** {p['per']}")
-                st.info(p['hab'])
+                st.write(f"**{p['n']}** | Nivel: {p['lvl']} | HP: {p['hp']} | CA: {p['ac']} | Percepción: {p['per']}")
+                st.write(f"FUE: {p['stats'][0]} DES: {p['stats'][1]} CON: {p['stats'][2]} INT: {p['stats'][3]} SAB: {p['stats'][4]} CAR: {p['stats'][5]}")
+                st.text(p['hab'])
 
-    # --- ENEMIGOS ---
-    with t_ene:
-        st.subheader("👹 Bestiario Local")
-        st.info("Aquí puedes guardar monstruos para usarlos luego en combate.")
-        # Espacio para futura implementación de guardado de monstruos
-
-    # --- COMBATE ---
+    # COMBATE (SIN TABLAS RARAS, SOLO LISTADO LIMPIO)
     with t_com:
-        st.subheader("⚔️ Rastreador de Iniciativa")
-        with st.expander("➕ Añadir Combatiente"):
-            with st.form("f_combate"):
-                c1, c2, c3, c4 = st.columns([2, 1, 1, 1])
-                nombre_c = c1.text_input("Nombre")
-                ini_c = c2.number_input("Iniciativa", 0, 50, value=10)
-                hp_c = c3.number_input("HP actual", 0, 500, value=20)
-                tipo_c = c4.selectbox("Tipo", ["PJ", "Enemigo", "PNJ"])
-                if st.form_submit_button("Añadir al Turno"):
-                    if nombre_c:
-                        cd["combate"].append({"nombre": nombre_c, "iniciativa": ini_c, "hp": hp_c, "tipo": tipo_c, "estados": []})
-                        cd["combate"] = sorted(cd["combate"], key=lambda x: x["iniciativa"], reverse=True)
-                        st.rerun()
-
-        if cd["combate"]:
-            if st.button("🗑️ Limpiar Todo"):
-                cd["combate"] = []
+        st.subheader("⚔️ Combate")
+        with st.form("add_com"):
+            c1, c2, c3 = st.columns([2,1,1])
+            n_c = c1.text_input("Nombre Combatiente")
+            i_c = c2.number_input("Iniciativa", 0, 50)
+            h_c = c3.number_input("HP", 0, 500)
+            if st.form_submit_button("Añadir"):
+                cd["combate"].append({"n": n_c, "i": i_c, "h": h_c, "e": []})
+                cd["combate"] = sorted(cd["combate"], key=lambda x: x["i"], reverse=True)
                 st.rerun()
-            
-            for idx, p in enumerate(cd["combate"]):
-                with st.container(border=True):
-                    col1, col2, col3, col4, col5 = st.columns([1, 2, 2, 4, 1])
-                    col1.subheader(f"`{p['iniciativa']}`")
-                    color = "blue" if p["tipo"] == "PJ" else "red"
-                    col2.markdown(f":{color}[**{p['nombre']}**]")
-                    cd["combate"][idx]["hp"] = col3.number_input("HP", 0, 1000, value=p["hp"], key=f"hp_{idx}")
-                    cd["combate"][idx]["estados"] = col4.multiselect("Estados", ESTADOS_PF2E, default=p["estados"], key=f"est_{idx}")
-                    if col5.button("❌", key=f"del_{idx}"):
-                        cd["combate"].pop(idx)
-                        st.rerun()
-        else:
-            st.info("No hay nadie en combate.")
 
-    # --- NOTAS ---
-    with t_not:
-        st.subheader("📝 Notas")
-        cd["notas"] = st.text_area("Notas del capítulo", value=cd.get("notas", ""), height=400)
+        for idx, cob in enumerate(cd["combate"]):
+            with st.container(border=True):
+                col1, col2, col3, col4 = st.columns([1, 2, 3, 1])
+                col1.write(f"**{cob['i']}**")
+                col2.write(f"**{cob['n']}**")
+                cd["combate"][idx]["h"] = col3.number_input("HP", value=cob["h"], key=f"h_{idx}", label_visibility="collapsed")
+                cd["combate"][idx]["e"] = col3.multiselect("Estados", ESTADOS_PF2E, default=cob["e"], key=f"e_{idx}")
+                if col4.button("❌", key=f"d_{idx}"):
+                    cd["combate"].pop(idx)
+                    st.rerun()
+
+    with t_ene: st.write("Sección de enemigos.")
+    with t_not: cd["notas"] = st.text_area("Notas", value=cd.get("notas", ""))
 
 else:
-    st.title("🧙 PF2e GM Screen")
-    st.info("Crea o selecciona una campaña en el menú de la izquierda.")
+    st.info("Selecciona campaña.")
