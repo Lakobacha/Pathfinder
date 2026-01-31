@@ -2,51 +2,38 @@ import streamlit as st
 import pandas as pd
 
 # 1. CONFIGURACIÓN
-st.set_page_config(page_title="Pathfinder 2e", layout="wide")
+st.set_page_config(page_title="PF2e GM Screen", layout="wide", initial_sidebar_state="expanded")
 
-# CSS para botones y estética
-st.markdown("""
-<style>
-    div.stButton > button[kind="primary"] { background-color: #ff4b4b !important; color: white !important; }
-    .stDataEditor { border: 1px solid #4a4a4a; border-radius: 5px; }
-</style>
-""", unsafe_allow_html=True)
-
-# Lista de estados oficiales PF2e en español
-ESTADOS_PF2E = [
-    "", "Agarrado", "Apresado", "Aturdido", "Cegado", "Confundido", "Controlado", 
-    "Deslumbrado", "Detenido", "Drenado", "Enfermo", "Fascinado", "Fatigado", 
-    "Hechizado", "Inconsciente", "Invisible", "Maldito", "Paralizado", 
-    "Petrificado", "Prone (Derribado)", "Sordo", "Sustado", "Trabado"
-]
-
-# 2. MEMORIA
+# 2. MEMORIA Y ESTRUCTURA
 if 'data' not in st.session_state:
     st.session_state.data = {}
 
-# 3. BARRA LATERAL (Simplificada para brevedad, mantiene tu lógica)
+ESTADOS_PF2E = ["", "Agarrado", "Apresado", "Aturdido", "Cegado", "Confundido", "Controlado", "Deslumbrado", "Detenido", "Drenado", "Enfermo", "Fascinado", "Fatigado", "Hechizado", "Inconsciente", "Invisible", "Maldito", "Paralizado", "Petrificado", "Derribado", "Sordo", "Asustado", "Trabado"]
+
+# 3. BARRA LATERAL
 with st.sidebar:
-    st.header("1. Campaña")
+    st.header("🗂️ Gestión de Campaña")
     nueva_c = st.text_input("Nueva Campaña")
     if st.button("➕ Crear"):
-        if nueva_c: st.session_state.data[nueva_c] = {}; st.rerun()
+        if nueva_c:
+            st.session_state.data[nueva_c] = {}
+            st.rerun()
     
     camp_sel = st.selectbox("Campaña", ["---"] + list(st.session_state.data.keys()))
 
     if camp_sel != "---":
         st.divider()
-        st.header("2. Libros")
         nuevo_l = st.text_input("Nuevo Libro")
-        if st.button("➕ Añadir"):
-            if nuevo_l: st.session_state.data[camp_sel][nuevo_l] = {}; st.rerun()
+        if st.button("➕ Añadir Libro"):
+            if nuevo_l:
+                st.session_state.data[camp_sel][nuevo_l] = {}
+                st.rerun()
         
         libro_sel = st.selectbox("Libro", ["---"] + list(st.session_state.data[camp_sel].keys()))
 
         if libro_sel != "---":
-            st.divider()
-            st.header("3. Capítulos")
             nuevo_cap = st.text_input("Nuevo Capítulo")
-            if st.button("➕"):
+            if st.button("➕ Añadir Capítulo"):
                 if nuevo_cap:
                     st.session_state.data[camp_sel][libro_sel][nuevo_cap] = {
                         "mapas": [], "pnjs": [], "enemigos": [], "notas": "", "combate": []
@@ -55,79 +42,107 @@ with st.sidebar:
             cap_sel = st.selectbox("Capítulo", ["---"] + list(st.session_state.data[camp_sel][libro_sel].keys()))
         else: cap_sel = "---"
         
-        if st.sidebar.button(f"🚨 BORRAR CAMPAÑA", type="primary"):
-            del st.session_state.data[camp_sel]; st.rerun()
+        st.divider()
+        if st.button("🚨 BORRAR CAMPAÑA", type="primary", use_container_width=True):
+            del st.session_state.data[camp_sel]
+            st.rerun()
     else: libro_sel, cap_sel = "---", "---"
 
-# 4. ÁREA DE TRABAJO
-st.title("🛡️ Pathfinder 2e")
+# 4. LÓGICA DE PESTAÑAS
+st.title("🛡️ Pathfinder 2e GM Screen")
 
 if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
+    # Inicialización de seguridad para no romper la app
     cap_data = st.session_state.data[camp_sel][libro_sel][cap_sel]
+    for key in ["mapas", "pnjs", "enemigos", "combate"]:
+        if key not in cap_data: cap_data[key] = []
+    if "notas" not in cap_data: cap_data["notas"] = ""
+
     t_mapas, t_pnjs, t_enemigos, t_combate, t_notas = st.tabs(["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"])
 
-    # (Las pestañas de Mapas, PNJs y Enemigos consumen los datos creados antes)
-    # ... (Se omite el código repetido de creación para ir al grano con el combate) ...
+    with t_mapas:
+        with st.expander("➕ Subir Mapa"):
+            n_m = st.text_input("Nombre Mapa")
+            i_m = st.file_uploader("Imagen", type=['png', 'jpg', 'jpeg'])
+            d_m = st.text_area("Descripción")
+            if st.button("Guardar Mapa"):
+                if n_m and i_m:
+                    cap_data["mapas"].append({"nombre": n_m, "img": i_m.getvalue(), "desc": d_m})
+                    st.rerun()
+        for m in cap_data["mapas"]:
+            with st.container(border=True):
+                st.subheader(m["nombre"])
+                c1, c2 = st.columns([2, 1])
+                try: c1.image(m["img"])
+                except: c1.error("Error al cargar imagen")
+                c2.info(m["desc"])
+
+    with t_pnjs:
+        with st.expander("➕ Nuevo PNJ"):
+            with st.form("f_pnj"):
+                n, l, a = st.columns([2,1,1])
+                nom = n.text_input("Nombre")
+                niv = l.number_input("Nivel", 0, 20)
+                anc = a.text_input("Clase")
+                hp = st.number_input("HP Máximo", 1)
+                ac = st.number_input("CA", 10)
+                hab = st.text_area("Habilidades")
+                if st.form_submit_button("Guardar"):
+                    cap_data["pnjs"].append({"n": nom, "lvl": niv, "anc": anc, "hp": hp, "ac": ac, "hab": hab})
+                    st.rerun()
+        for p in cap_data["pnjs"]:
+            with st.container(border=True):
+                st.write(f"**{p['n']}** | Niv {p['lvl']} | HP: {p['hp']} | CA: {p['ac']}")
+                st.caption(p['hab'])
+
+    with t_enemigos:
+        with st.expander("➕ Nuevo Enemigo"):
+            with st.form("f_ene"):
+                nom_e = st.text_input("Nombre Monstruo")
+                hp_e = st.number_input("HP", 1)
+                ac_e = st.number_input("CA ", 10)
+                desc_e = st.text_area("Ataques/Acciones")
+                if st.form_submit_button("Guardar Enemigo"):
+                    cap_data["enemigos"].append({"n": nom_e, "hp": hp_e, "ac": ac_e, "desc": desc_e})
+                    st.rerun()
+        for e in cap_data["enemigos"]:
+            with st.container(border=True):
+                st.write(f"**{e['n']}** | HP: {e['hp']} | CA: {e['ac']}")
+                st.warning(e['desc'])
 
     with t_combate:
-        st.write("### ⚔️ Control de Iniciativa y Estados")
+        st.subheader("⚔️ Iniciativa")
+        c1, c2 = st.columns(2)
+        p_sel = c1.selectbox("Añadir PNJ", ["---"] + [x["n"] for x in cap_data["pnjs"]])
+        if c1.button("Añadir PNJ") and p_sel != "---":
+            ref = next(x for x in cap_data["pnjs"] if x["n"] == p_sel)
+            cap_data["combate"].append({"Nombre": ref["n"], "Iniciativa": 0, "HP": ref["hp"], "AC": ref["ac"], "Estado": ""})
+            st.rerun()
         
-        c_add1, c_add2 = st.columns(2)
-        with c_add1:
-            pnj_n = st.selectbox("Importar PNJ", ["---"] + [p["n"] for p in cap_data.get("pnjs", [])])
-            if st.button("Añadir PNJ") and pnj_n != "---":
-                p = next(x for x in cap_data["pnjs"] if x["n"] == pnj_n)
-                cap_data["combate"].append({"Nombre": p["n"], "Iniciativa": 0, "HP": p["hp"], "CA": p["ac"], "Estado": ""})
-                st.rerun()
-
-        with c_add2:
-            ene_n = st.selectbox("Importar Enemigo", ["---"] + [e["n"] for e in cap_data.get("enemigos", [])])
-            if st.button("Añadir Enemigo") and ene_n != "---":
-                e = next(x for x in cap_data["enemigos"] if x["n"] == ene_n)
-                cap_data["combate"].append({"Nombre": e["n"], "Iniciativa": 0, "HP": e["hp"], "CA": e["ac"], "Estado": ""})
-                st.rerun()
+        e_sel = c2.selectbox("Añadir Enemigo", ["---"] + [x["n"] for x in cap_data["enemigos"]])
+        if c2.button("Añadir Enemigo") and e_sel != "---":
+            ref = next(x for x in cap_data["enemigos"] if x["n"] == e_sel)
+            cap_data["combate"].append({"Nombre": ref["n"], "Iniciativa": 0, "HP": ref["hp"], "AC": ref["ac"], "Estado": ""})
+            st.rerun()
 
         if cap_data["combate"]:
-            df = pd.DataFrame(cap_data["combate"])
+            df_c = pd.DataFrame(cap_data["combate"])
+            edited = st.data_editor(df_c, column_config={
+                "Estado": st.column_config.SelectboxColumn("Estado", options=ESTADOS_PF2E),
+                "HP": st.column_config.NumberColumn("HP", step=1),
+                "Iniciativa": st.column_config.NumberColumn("Inic", step=1)
+            }, use_container_width=True, num_rows="dynamic")
             
-            # CONFIGURACIÓN DE COLUMNAS DEL EDITOR
-            # st.data_editor permite subir/bajar números con flechas y menús desplegables
-            df_editado = st.data_editor(
-                df,
-                column_config={
-                    "Iniciativa": st.column_config.NumberColumn("Inic.", format="%d 🎲", step=1),
-                    "HP": st.column_config.NumberColumn("Vida (HP)", step=1, format="%d ❤️"),
-                    "CA": st.column_config.NumberColumn("CA", format="%d 🛡️"),
-                    "Estado": st.column_config.SelectboxColumn(
-                        "Estado Condición",
-                        options=ESTADOS_PF2E,
-                        width="medium"
-                    ),
-                    "Nombre": st.column_config.TextColumn("Nombre", disabled=True)
-                },
-                num_rows="dynamic",
-                use_container_width=True,
-                key="combat_editor"
-            )
-
-            col_b1, col_b2 = st.columns([1, 5])
-            if col_b1.button("💾 Guardar y Ordenar"):
-                # Ordenar por iniciativa antes de guardar
-                cap_data["combate"] = df_editado.sort_values(by="Iniciativa", ascending=False).to_dict('records')
+            if st.button("Actualizar y Ordenar"):
+                cap_data["combate"] = edited.sort_values("Iniciativa", ascending=False).to_dict('records')
                 st.rerun()
-            
-            if col_b2.button("🗑️ Resetear Combate", type="primary"):
+            if st.button("Limpiar Combate"):
                 cap_data["combate"] = []
                 st.rerun()
-            
-            st.caption("💡 Puedes usar las flechas en la celda de HP para subir/bajar la vida rápidamente.")
-        else:
-            st.info("No hay combatientes activos.")
 
-    # (Pestañas de Notas, Mapas etc siguen funcionando igual)
     with t_notas:
-        cap_data["notas"] = st.text_area("Notas:", value=cap_data.get("notas", ""), height=300)
-        if st.button("Guardar"): st.success("Ok")
+        cap_data["notas"] = st.text_area("Notas:", value=cap_data["notas"], height=400)
+        if st.button("Guardar Notas"): st.success("Guardado")
 
 else:
-    st.info("Configura la campaña en el lateral.") 
+    st.info("👈 Crea o selecciona una Campaña, Libro y Capítulo para empezar.") 
