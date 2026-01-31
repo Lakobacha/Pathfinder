@@ -7,7 +7,7 @@ st.set_page_config(page_title="Pathfinder 2e", layout="wide")
 if 'data' not in st.session_state:
     st.session_state.data = {}
 
-# 3. BARRA LATERAL: JERARQUÍA (Campaña > Libro > Capítulo)
+# 3. BARRA LATERAL: JERARQUÍA
 with st.sidebar:
     st.header("1. Campaña")
     nueva_c = st.text_input("Nombre de Campaña")
@@ -36,53 +36,49 @@ with st.sidebar:
             if st.button("➕ Añadir Capítulo"):
                 if nuevo_cap not in st.session_state.data[camp_sel][libro_sel]:
                     st.session_state.data[camp_sel][libro_sel][nuevo_cap] = {
-                        "mapas": [],
-                        "pnjs": [],
-                        "enemigos": [],
-                        "notas": ""
+                        "mapas": [], "pnjs": [], "enemigos": [], "notas": ""
                     }
                     st.rerun()
-
-# 4. ÁREA DE TRABAJO (Solo el Sistema y Pestañas)
-if camp_sel != "---" and libro_sel != "---":
-    # Título limpio del sistema
-    st.title("🛡️ Pathfinder 2e")
-    
-    lista_caps = list(st.session_state.data[camp_sel][libro_sel].keys())
-    
-    if lista_caps:
-        cap_sel = st.radio("Capítulos:", lista_caps, horizontal=True)
-        cap_data = st.session_state.data[camp_sel][libro_sel][cap_sel]
-
-        # PESTAÑAS INDEPENDIENTES
-        t_mapas, t_pnjs, t_enemigos, t_notas = st.tabs(["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "📝 Notas"])
-
-        with t_mapas:
-            # Sección de Mapas
-            with st.expander("➕ Subir Nuevo Mapa"):
-                nombre_mapa = st.text_input("Nombre del Mapa/Zona")
-                img_file = st.file_uploader("Imagen del Mapa", type=['png', 'jpg', 'jpeg'])
-                info_hab = st.text_area("Información de Habitaciones")
-                
-                if st.button("💾 Guardar Mapa"):
-                    if nombre_mapa and img_file:
-                        cap_data["mapas"].append({
-                            "nombre": nombre_mapa,
-                            "imagen": img_file.getvalue(),
-                            "info": info_hab
-                        })
-                        st.rerun()
-
-            for m in cap_data["mapas"]:
-                with st.container(border=True):
-                    st.write(f"#### {m['nombre']}")
-                    col1, col2 = st.columns([2, 1])
-                    with col1:
-                        st.image(m['imagen'], use_container_width=True)
-                    with col2:
-                        st.info(m['info'])
+            
+            # Selección de Capítulo movida a la barra lateral para limpiar el centro
+            cap_sel = st.selectbox("Seleccionar Capítulo", ["---"] + list(st.session_state.data[camp_sel][libro_sel].keys()))
+        else:
+            cap_sel = "---"
     else:
-        st.info("Crea un capítulo para comenzar.")
+        libro_sel = "---"
+        cap_sel = "---"
+
+# 4. ÁREA DE TRABAJO
+st.title("🛡️ Pathfinder 2e")
+
+if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
+    cap_data = st.session_state.data[camp_sel][libro_sel][cap_sel]
+
+    # PESTAÑAS
+    t_mapas, t_pnjs, t_enemigos, t_notas = st.tabs(["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "📝 Notas"])
+
+    with t_mapas:
+        with st.expander("➕ Subir Nuevo Mapa"):
+            nombre_mapa = st.text_input("Nombre del Mapa/Zona")
+            img_file = st.file_uploader("Imagen del Mapa", type=['png', 'jpg', 'jpeg'])
+            info_hab = st.text_area("Información de Habitaciones")
+            
+            if st.button("💾 Guardar Mapa"):
+                if nombre_mapa and img_file:
+                    cap_data["mapas"].append({
+                        "nombre": nombre_mapa,
+                        "imagen": img_file.getvalue(),
+                        "info": info_hab
+                    })
+                    st.rerun()
+
+        for m in cap_data["mapas"]:
+            with st.container(border=True):
+                st.write(f"#### {m['nombre']}")
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    st.image(m['imagen'], use_container_width=True)
+                with col2:
+                    st.info(m['info'])
 else:
-    st.title("🛡️ Pathfinder 2e")
-    st.info("Configura la campaña y el libro en el panel izquierdo.") 
+    st.info("Configura Campaña, Libro y Capítulo en el panel lateral.") 
