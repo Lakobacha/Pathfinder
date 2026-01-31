@@ -131,4 +131,4 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         if st.button("💾 Guardar Notas"): st.success("Guardado")
 
 else:
-    st.info("Crea una campaña y un capítulo para empezar.") 
+    st.info("Crea una campaña y un capítulo para empezar.")
