@@ -33,8 +33,6 @@ with st.sidebar:
     )
 
     if camp_sel != "---":
-
-        # Botón de borrado
         if st.button("🗑️ BORRAR CAMPAÑA", type="primary"):
             del st.session_state.data[camp_sel]
             st.rerun()
@@ -91,7 +89,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
     )
 
     # ======================================================
-    # 🗺️ MAPAS (IMAGEN + INFO)
+    # 🗺️ MAPAS
     # ======================================================
     with t_map:
         st.subheader("🗺️ Mapas del Capítulo")
@@ -115,7 +113,6 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                         })
                         st.rerun()
 
-        # Mostrar mapas guardados
         for m in cd["mapas"]:
             with st.container(border=True):
                 st.markdown(f"### {m['nombre']}")
@@ -124,7 +121,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 st.write(m["info"])
 
     # ======================================================
-    # 👥 PNJs (IGUAL QUE TENÍAS)
+    # 👥 PNJs
     # ======================================================
     with t_pnj:
         with st.expander("➕ Crear Nuevo PNJ"):
@@ -171,7 +168,7 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 )
 
     # ======================================================
-    # 👹 ENEMIGOS (MISMO SISTEMA QUE PNJs)
+    # 👹 ENEMIGOS (igual que PNJs)
     # ======================================================
     with t_ene:
         with st.expander("➕ Crear Nuevo Enemigo"):
@@ -218,14 +215,13 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                 )
 
     # ======================================================
-    # ⚔️ COMBAT TRACKER (+/- HP + ESTADOS)
+    # ⚔️ COMBAT TRACKER (modificado correctamente)
     # ======================================================
     with t_com:
         st.subheader("⚔️ Combat Tracker")
 
         col1, col2 = st.columns(2)
 
-        # Añadir PNJ al combate
         p_add = col1.selectbox(
             "Añadir PNJ",
             ["---"] + [x["n"] for x in cd["pnjs"]]
@@ -263,14 +259,12 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
             )
 
             if st.button("💾 Guardar Cambios y Ordenar"):
-                cd["combate"] = ed_df.sort_values(
-                    "Iniciativa", ascending=False
-                ).to_dict("records")
+                cd["combate"] = ed_df.sort_values("Iniciativa", ascending=False).to_dict("records")
                 st.rerun()
 
-            # BOTONES + Y - PARA HP
+            # BOTONES + / - HP
             st.divider()
-            st.subheader("❤️ Ajuste rápido de HP (+ / -)")
+            st.subheader("❤️ Ajuste rápido de HP")
 
             for idx, c in enumerate(cd["combate"]):
                 a, b, ccol, d = st.columns([3, 1, 1, 2])
