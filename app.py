@@ -19,7 +19,6 @@ if 'data' not in st.session_state:
 # 2. BARRA LATERAL
 with st.sidebar:
     st.header("🏰 Gestión de Campaña")
-
     nueva_c = st.text_input("Nombre de la Campaña")
     if st.button("➕ Crear Campaña"):
         if nueva_c:
@@ -66,7 +65,9 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
         if k not in cd:
             cd[k] = []
 
-    t_map, t_pnj, t_ene, t_com, t_not = st.tabs(["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"])
+    t_map, t_pnj, t_ene, t_com, t_not = st.tabs(
+        ["🗺️ Mapas", "👥 PNJs", "👹 Enemigos", "⚔️ Combate", "📝 Notas"]
+    )
 
     # ======================================================
     # MAPAS
@@ -119,77 +120,5 @@ if camp_sel != "---" and libro_sel != "---" and cap_sel != "---":
                     st.rerun()
         for p in cd["pnjs"]:
             with st.container(border=True):
-                st.write(f"**{p['n']}** | HP: {p['hp']} | CA: {p['ac']}")
-                st.caption(f"F:{p['stats'][0]} D:{p['stats'][1]} C:{p['stats'][2]} I:{p['stats'][3]} S:{p['stats'][4]} Ch:{p['stats'][5]}")
-
-    # ======================================================
-    # ENEMIGOS
-    # ======================================================
-    with t_ene:
-        with st.expander("➕ Crear Nuevo Enemigo"):
-            with st.form("f_ene"):
-                c1,c2,c3 = st.columns([2,1,1])
-                e_nom = c1.text_input("Nombre")
-                e_niv = c2.number_input("Nivel",0,25)
-                e_tipo = c3.text_input("Tipo")
-                s1,s2,s3,s4,s5,s6 = st.columns(6)
-                f = s1.number_input("FUE",10,key="e_f")
-                d = s2.number_input("DES",10,key="e_d")
-                con = s3.number_input("CON",10,key="e_c")
-                i = s4.number_input("INT",10,key="e_i")
-                sab = s5.number_input("SAB",10,key="e_s")
-                car = s6.number_input("CAR",10,key="e_ch")
-                v1,v2,v3 = st.columns(3)
-                e_hp = v1.number_input("HP Máx",1,key="e_hp")
-                e_ac = v2.number_input("CA",10,key="e_ca")
-                e_per = v3.number_input("Percepción",0,key="e_per")
-                e_hab = st.text_area("Habilidades y Ataques",key="e_hab")
-                if st.form_submit_button("💾 Guardar Enemigo"):
-                    cd["enemigos"].append({"n":e_nom,"lvl":e_niv,"hp":e_hp,"ac":e_ac,"per":e_per,"stats":[f,d,con,i,sab,car],"hab":e_hab})
-                    st.rerun()
-        for e in cd["enemigos"]:
-            with st.container(border=True):
-                st.write(f"**{e['n']}** | HP: {e['hp']} | CA: {e['ac']}")
-                st.caption(f"F:{e['stats'][0]} D:{e['stats'][1]} C:{e['stats'][2]} I:{e['stats'][3]} S:{e['stats'][4]} Ch:{e['stats'][5]}")
-
-    # ======================================================
-    # COMBAT TRACKER INTERACTIVO
-    # ======================================================
-    with t_com:
-        st.subheader("⚔️ Combat Tracker")
-
-        col1, col2 = st.columns(2)
-        sel = col1.selectbox("Añadir PNJ al combate", ["---"] + [x["n"] for x in cd["pnjs"]])
-        if col1.button("Añadir") and sel != "---":
-            ref = next(x for x in cd["pnjs"] if x["n"]==sel)
-            cd["combate"].append({"Nombre":ref["n"], "Iniciativa":0, "HP":int(ref["hp"]), "CA":int(ref["ac"]), "Estado":""})
-            st.rerun()
-
-        # Mostrar combatientes
-        for idx,c in enumerate(cd["combate"]):
-            cols = st.columns([2,1,0.5,0.5,1,2])
-            cols[0].write(f"**{c['Nombre']}**")
-            c["Iniciativa"] = cols[1].number_input("Iniciativa", value=c["Iniciativa"], step=1, key=f"ini_{idx}")
-            if cols[2].button("➖", key=f"hp_minus_{idx}"): c["HP"]-=1
-            if cols[3].button("➕", key=f"hp_plus_{idx}"): c["HP"]+=1
-            cols[4].write(f"HP: {c['HP']}")
-            cols[5].selectbox("Estado", ESTADOS_PF2E, index=ESTADOS_PF2E.index(c['Estado']) if c['Estado'] in ESTADOS_PF2E else 0, key=f"estado_{idx}")
-
-        if st.button("Ordenar por iniciativa"):
-            cd["combate"] = sorted(cd["combate"], key=lambda x:x["Iniciativa"], reverse=True)
-            st.rerun()
-        if st.button("🗑️ Limpiar combate"):
-            cd["combate"]=[]
-            st.rerun()
-
-    # ======================================================
-    # NOTAS
-    # ======================================================
-    with t_not:
-        cd["notas"] = st.text_area("Bloc de notas", value=cd["notas"], height=400)
-        if st.button("💾 Guardar Notas"):
-            st.success("Guardado")
-
-else:
-    st.info("Crea una campaña y un capítulo para empezar.")
+                st.write(f"**{p['n']}** | HP: {
  
