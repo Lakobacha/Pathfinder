@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 import pandas as pd
 
 # 1. CONFIGURACIÓN
@@ -58,4 +58,4 @@ if camp_sel != "---":
     else:
         st.info("Selecciona un Libro en el panel lateral para ver los capítulos.")
 else:
-    st.info("Crea o selecciona una Campaña para empezar.")
+    st.info("Crea o selecciona una Campaña para empezar.") 
